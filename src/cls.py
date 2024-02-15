@@ -1,41 +1,9 @@
 import pygame as pg
 import os
+from interface_elements.Button import Button
 from random import randint
+from interface_elements.Label import Label
 pg.init()
-
-
-class Button:
-
-    def __init__(self, x: int, y: int, width: int, height: int, images_pathes: tuple, text=None, function=None, isPressed=False):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.text = text
-        self.images_pathes = images_pathes
-        self.function = function
-        self.isPressed = isPressed
-        if len(self.images_pathes) != 2:
-            raise RuntimeError
-        self.img1 = pg.image.load(self.images_pathes[0])
-        self.img1 = pg.transform.scale(self.img1, (self.width, self.height))
-        self.img1.set_colorkey((255, 255, 255))
-        self.img1_rect = self.img1.get_rect(topleft=(self.x,self.y))
-
-        self.img2 = pg.image.load(self.images_pathes[1])
-        self.img2 = pg.transform.scale(self.img2, (self.width, self.height))
-        self.img2.set_colorkey((255, 255, 255))
-        
-    def show(self, scr):
-        self.curret_img = self.img2 if self.isPressed else self.img1
-        scr.blit(self.curret_img, self.img1_rect.topleft)
-
-    def changing(self, mouse_pos):
-        self.isPressed = self.img1_rect.collidepoint(mouse_pos)
-
-    def do_func(self,event):
-        if self.function != None and self.isPressed and event.type==pg.MOUSEBUTTONDOWN and event.button==1:
-            self.function()
 
 
 class Player:
@@ -46,9 +14,10 @@ class Player:
         self.get_sound()
         self.n_sound = 0
         self.snd = pg.mixer.Sound(
-                f"{self.path}/{self.songs[self.n_sound]}")
+            f"{self.path}/{self.songs[self.n_sound]}")
         self.playing = False
-    
+        self.agn = False
+
     def plad(self):
         if not self.playing:
             self.playing = True
@@ -58,7 +27,7 @@ class Player:
         else:
             self.playing = False
             self.snd.stop()
-    
+
     def next(self):
         self.n_sound += 1
         self.playing = False
@@ -66,17 +35,15 @@ class Player:
             self.n_sound = 0
         self.snd.stop()
         self.plad()
-        
-    
+
     def next_minus(self):
         self.n_sound += -1
         self.playing = False
-        if self.n_sound<0:
-            self.n_sound=len(self.songs)-1
+        if self.n_sound < 0:
+            self.n_sound = len(self.songs)-1
         self.snd.stop()
         self.plad()
-        
-        
+
     def load_music(self, path, name="song.mp3"):
         if ''.join(name[-4:]) != ".mp3":
             return 0
@@ -88,6 +55,9 @@ class Player:
             f.write(data)
         self.get_sound()
 
+    def again(self):
+        self.again = True
+
     def get_sound(self):
         sng = os.listdir(self.path)
         self.songs = []
@@ -98,8 +68,19 @@ class Player:
                 continue
 
     def mixing(self):
-        self.songs = [self.songs[randint(0, len(self.songs)-1)]
-                      for _ in self.songs]
+        nmbrs = []
+        songs = []
+        ln = len(self.songs)-1
+        i = 0
+        while i <= ln:
+            a = randint(0, ln)
+            if a in nmbrs:
+                continue
+            else:
+                nmbrs.append(a)
+                songs.append(self.songs[a])
+                i += 1
+        self.songs = songs
         self.snd.stop()
         self.playing = False
         self.plad()
@@ -111,31 +92,45 @@ class Window:
         self.screen = pg.display.set_mode((400, 400))
         self.player = Player()
         self.clock = pg.time.Clock()
+        self.img_pacs = (("./src/img/img1.png", "./src/img/img2.png"), ("./src/img/img3.png",
+                    "./src/img/img4.png"), ("./src/img/img5.png", "./src/img/img6.png"), ("./src/img/img7.png", "./src/img/img8.png"))
         self.button_start = Button(
-            10, 10, 70, 60, ("./src/img/img1.png", "./src/img/img2.png"), function=self.player.plad)
+            190, 65, 35, 35, self.img_pacs[0], function=self.player.plad)
         self.button_next = Button(
-            80, 80, 80, 80, ("./src/img/img3.png", "./src/img/img4.png"), function=self.player.next)
+            280, 65, 35, 35, self.img_pacs[1], function=self.player.next)
         self.button_next_minus = Button(
-            160, 160, 80, 80, ("./src/img/img5.png", "./src/img/img6.png"), function=self.player.next_minus)
+            100, 65, 35, 35, self.img_pacs[2], function=self.player.next_minus)
         self.button_mix = Button(
-            300, 160, 80, 80, ("./src/img/img7.png", "./src/img/img8.png"), function=self.player.mixing)
+            190, 105, 35, 35, self.img_pacs[3], function=self.player.mixing)
+        self.label1 = Label(0, 0, 400, 50,text="It music python player")
+
+    def buttons_init(self):
+        self.button_start.show(self.screen)
+        self.button_next.show(self.screen)
+        self.button_next_minus.show(self.screen)
+        self.button_mix.show(self.screen)
+
+    def labels_init(self):
+        self.label1.show(self.screen, size=15, aligin=(120, 15
+                                                       ), color=(50, 120, 0), color_background=(40, 60, 80))
+
+    def button_anim_func(self, event):
+        self.button_start.changing(pg.mouse.get_pos())
+        self.button_next.changing(pg.mouse.get_pos())
+        self.button_mix.changing(pg.mouse.get_pos())
+        self.button_next_minus.changing(pg.mouse.get_pos())
+        self.button_start.do_func(event)
+        self.button_next_minus.do_func(event)
+        self.button_next.do_func(event)
+        self.button_mix.do_func(event)
 
     def run(self):
         while True:
-            self.screen.fill((230, 245, 27))
-            self.button_start.show(self.screen)
-            self.button_next.show(self.screen)
-            self.button_next_minus.show(self.screen)
-            self.button_mix.show(self.screen)
+            self.screen.fill((200, 200, 200))
+            self.buttons_init()
+            self.labels_init()
             for event in pg.event.get():
-                self.button_start.changing(pg.mouse.get_pos())
-                self.button_next.changing(pg.mouse.get_pos())
-                self.button_mix.changing(pg.mouse.get_pos())
-                self.button_next_minus.changing(pg.mouse.get_pos())
-                self.button_start.do_func(event)
-                self.button_next_minus.do_func(event)
-                self.button_next.do_func(event)
-                self.button_mix.do_func(event)
+                self.button_anim_func(event)
                 if event.type == pg.QUIT:
                     exit()
             pg.display.flip()
