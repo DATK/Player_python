@@ -19,7 +19,9 @@ class Label:
             self.zone=pg.transform.scale(self.zone,(self.weight,self.height))
             self.zone_rect=self.zone.get_rect(topleft=(self.x,self.y))
         
-    def show(self,scr,color_background=(0,0,0),font="Comic Sans MS",size=25,aligin=(0,0),color=(255,255,255)):
+    def show(self,scr,text=None,color_background=(0,0,0),font="Comic Sans MS",size=25,aligin=(0,0),color=(255,255,255)):
+        if text!=None:
+            self.text=text
         my_font =pg.font.SysFont(font, size)
         self.zone.fill(color_background)
         text_rnd=my_font.render(self.text,False,color)

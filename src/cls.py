@@ -1,8 +1,8 @@
 import pygame as pg
 import os
-from interface_elements.Button import Button
+from src.interface_elements.Button import Button
 from random import randint
-from interface_elements.Label import Label
+from src.interface_elements.Label import Label
 pg.init()
 
 
@@ -103,6 +103,7 @@ class Window:
         self.button_mix = Button(
             190, 105, 35, 35, self.img_pacs[3], function=self.player.mixing)
         self.label1 = Label(0, 0, 400, 50,text="It music python player")
+        self.fps_label=Label(0,385,15,10,text="fps")
 
     def buttons_init(self):
         self.button_start.show(self.screen)
@@ -113,6 +114,7 @@ class Window:
     def labels_init(self):
         self.label1.show(self.screen, size=15, aligin=(120, 15
                                                        ), color=(50, 120, 0), color_background=(40, 60, 80))
+        self.fps_label.show(self.screen,size=8,aligin=(10,385),color_background=(200,200,200),text=str(self.clock.get_fps()))
 
     def button_anim_func(self, event):
         self.button_start.changing(pg.mouse.get_pos())
@@ -123,6 +125,7 @@ class Window:
         self.button_next_minus.do_func(event)
         self.button_next.do_func(event)
         self.button_mix.do_func(event)
+        
 
     def run(self):
         while True:
@@ -135,8 +138,3 @@ class Window:
                     exit()
             pg.display.flip()
             self.clock.tick(60)
-
-
-app = Window()
-
-app.run()
